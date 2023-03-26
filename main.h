@@ -1,3 +1,6 @@
+#pragma once
+#include <windows.h>
+
 void gotoXY(short x, short y) {
 	COORD pos = { x, y };
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);

@@ -23,7 +23,7 @@
 #include "main.h"
 using namespace std;
 int x=20, y=20,cnt=-1;
-bool state;
+bool in_air,jump;
 double G=1;
 string map[500]{
 	"##############################",
@@ -58,49 +58,49 @@ string map[500]{
 	"##############################"
 };
 void Gmg(int x2, int y2){
-	if(map[y + 1][x] == '#') return;
-	if(state == 0 && map[int(y+G)][x] != '#' && y + G > 31 && y < 30 && y > 0){
-		cout << "1" << endl;
-		while(map[y + 1][x] != '#' && y < 30 && y > 0) y ++;
-		if(y >= 30) y = 29;
+	if(map[y + 1][x] == '#')	return;
+	if(!in_air&&map[int(y+G)][x] == ' ' && y + G > 31 && y < 30 && y > 0){
+		while(map[y + 1][x] == ' ' && y < 30 && y > 0) y ++;
+		if(y>=30)	y=29;
 		G = 1;
-		return ;
+	} else if((!in_air&&map[int(y+G)][x] == '#')|| y+G  > 29){	G = 1;
+	} else {
+		int to=y;
+		while(map[to+1][x]==' '&&to-y<=G)	to++;
+		y=to;
+		G*=1.2;
 	}
-	if((state == 0 && map[int(y+G)][x] == '#')|| y+G  > 29){
-		G = 1;
-		return;
-	}
-	int to=y;
-	while(map[to+1][x]!='#'&&to-y<=G)
-		to++;
-	y=to;
-	G+=G*0.2;
 }
 int main(){
 	hideCursor();
 	while(1){
 		if(_kbhit()){
+			//input
 			char ch=_getch();
 			ch=tolower(ch);
-			if(ch=='s'&&y<30)	y++;
-			else if(ch=='w'&& y > 1 && state == 0 && map[y + 1][x] == '#')	state = 1;
-			else if(ch=='a'&& x > 1 && map[y][x - 1] != '#') x--;
-			else if(ch=='d'&& x < 30 && map[y][x + 1] != '#')	x++;
+			if(ch=='w'&&!in_air&&y>1&&map[y+1][x]=='#')	in_air=true,jump=true;	//着地
+			else if(ch=='a'&& x > 1 && map[y][x - 1] == ' ')	x--;
+			else if(ch=='d'&& x < 30 && map[y][x + 1] == ' ')	x++;
 		}
-		if(state == 1 && cnt < 4 && map[y - 1][x] != '#') cnt ++, y --, G = 1;
-		if((cnt == 4 && state == 1) || map[y - 1][x] == '#' || y == 1){
-			state = 0;
-			cnt = -1;
+		//move
+		if(in_air&&jump&&cnt<4&&map[y-1][x]==' '){
+			cnt++;
+			y--;
+			G=1;
 		}
-		if(state == 0)	Gmg(x, y);
-		for(int i = 0; i <= 30 ; i++){
+		if(in_air&&(cnt==4||map[y+1][x]=='#'||y==1)){
+			jump=false;
+			cnt=-1;
+		}
+		if(map[y+1][x]=='#'||y==1)	in_air=false;
+		if(!jump)	Gmg(x, y);
+		//print map
+		for(int i = 0; i <= 30 ; i++)
 			for(int j = 0; j <= 30; j ++){
 				gotoXY(j,i);
-				if(i == y && j == x) cout << "@";
-				else if(map[i][j] == '#') cout << "#";
-				else cout << ' ';
+				if(i==y&&j==x)	cout << "@";
+				else	cout<<map[i][j];
 			}
-		}
 	}
 	return 0;
 }
